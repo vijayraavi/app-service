@@ -1,0 +1,72 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "webAppName": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "The name of the Web App"
+            }
+        },
+        "webAppSKU": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Free",
+                "Shared",
+                "Basic",
+                "Standard"
+            ],
+            "metadata": {
+                "description": "The Web App pricing tier"
+            }
+        },
+        "workerSize": {
+            "type": "string",
+            "defaultValue": "0",
+            "allowedValues": [
+                "0",
+                "1",
+                "2"
+            ],
+            "metadata": {
+                "description": "The Web App worker size"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "apiVersion": "2014-06-01",
+            "type": "Microsoft.Web/serverfarms",
+            "name": "[parameters('webAppName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "App Service Plan"
+            },
+            "properties": {
+                "name": "[parameters('webAppName')]",
+                "sku": "[parameters('webAppSKU')]",
+                "workerSize": "[parameters('workerSize')]",
+                "numberOfWorkers": 1
+            }
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('webAppName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', parameters('webAppName'))]"
+            ],
+            "tags": {},
+            "properties": {
+                "name": "[parameters('webAppName')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', parameters('webAppName'))]"
+            },
+            "resources": []
+        }
+    ]
+}
