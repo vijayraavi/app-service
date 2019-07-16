@@ -2,7 +2,14 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "frontDoorHostPrefix": {
+        "customDomain": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "The custom domain, e.g. www.contoso.com"
+            }
+        },
+        "frontDoorName": {
             "type": "string",
             "minLength": 1,
             "metadata": {
@@ -44,8 +51,9 @@
     },
     "variables": {
         "Web App Address": "[concat(parameters('webAppName'), '.azurewebsites.net')]",
-        "Front Door Name": "[parameters('frontDoorHostPrefix')]",
+        "Front Door Name": "[parameters('frontDoorName')]",
         "Main Front End": "main-frontend",
+        "Custom Front End": "custom-frontend",
         "Main Health Probe Settings": "main-health-probe",
         "Main Load Balancing Settings": "main-load-balancing-settings",
         "App Service Backend Pool": "app-service-pool"
@@ -109,6 +117,14 @@
                             "sessionAffinityEnabledState": "Disabled",
                             "sessionAffinityTtlSeconds": 0
                         }
+                    },
+                    {
+                        "name": "[variables('Custom Front End')]",
+                        "properties": {
+                            "hostName": "[parameters('customDomain')]",
+                            "sessionAffinityEnabledState": "Disabled",
+                            "sessionAffinityTtlSeconds": 0
+                        }
                     }
                 ],
                 "healthProbeSettings": [
@@ -161,6 +177,9 @@
                             "frontendEndpoints": [
                                 {
                                     "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints', variables('Front Door Name'), variables('Main Front End'))]"
+                                },
+                                {
+                                    "id": "[resourceId('Microsoft.Network/frontDoors/frontendEndpoints', variables('Front Door Name'), variables('Custom Front End'))]"
                                 }
                             ],
                             "acceptedProtocols": [
